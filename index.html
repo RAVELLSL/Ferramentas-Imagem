@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -18,8 +17,11 @@ body, html {
 }
 
 #url-input-container {
+  z-index: 20; /* Eleva acima das miniaturas para evitar sobreposição */
+  position: relative; /* Necessário para o z-index funcionar */
   margin-top: 2rem;
-  width: 100%;
+  width: 80%;
+  max-width: 500px; /* Limita o tamanho do contêiner de entrada para evitar ocupar toda a largura em telas grandes */
   background-color: #fff;
   padding: 20px;
   border-radius: 8px;
@@ -39,55 +41,69 @@ body, html {
   padding: 10px;
   border: 1px solid #ced4da;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 16px;
 }
 
 #add-button, .load-button {
-  background-image: linear-gradient(to right, #ffafbd, #2193b0, #6dd5ed);
+  background-color: #007bff; /* Botões azuis */
   color: white;
   border: none;
   border-radius: 5px;
-  padding: 5px 30px;
+  padding: 10px 15px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
 }
 
-#add-button:hover, .load-button:hover, .remove-button:hover {
-  opacity: 0.9;
+#add-button:hover, .load-button:hover {
+  opacity: 0.8;
 }
 
 .remove-button {
-  border-radius: 10%;
-  padding: 10px 13px;
+  background-color: #dc3545; /* Botões vermelhos para remover */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Styles for the large highlighted image */
-.current-image {
-  display: none; /* Initially hidden until an image is loaded */
-  /* These styles will be overwritten when .large-image class is added dynamically */
+.remove-button:hover {
+  opacity: 0.8;
 }
 
-.large-image {
-  max-width: 90%;
-  max-height: 60vh;
-  object-fit: contain;
-  margin: 20px auto;
-  border-radius: 8px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  display: block;
+#current-image {
+  width: 40vw; /* 80% da largura da viewport */
+  height: auto; /* Ajuste automático da altura para manter a proporção */
+  object-fit: contain; /* A imagem se ajustará dentro dessas dimensões sem cortar */
+  position: absolute;
+  left: 50%; /* Centraliza horizontalmente */
+  bottom: 20vh; /* Espaço do rodapé para miniaturas e margem */
+  transform: translateX(-50%); /* Centraliza horizontalmente */
+  z-index: 1;
 }
 
 #images-container {
-  width: 80%;
-  margin-top: 1rem;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-top: 1px solid #ced4da;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 10px;
+  z-index: 10;
+  overflow-x: auto; /* Permite rolagem horizontal se as miniaturas ultrapassarem a largura da tela */
+  max-height: 150px; /* Altura das miniaturas */
 }
 
 .image-container {
@@ -95,10 +111,9 @@ body, html {
   transition: transform 0.2s;
 }
 
-/* Styles for thumbnail images */
 .thumbnail {
-  max-width: 100px; /* Small size for guiding thumbnails */
-  max-height: 100px; /* Small size for guiding thumbnails */
+  max-width: 100px; /* Largura máxima para as miniaturas */
+  max-height: 100px; /* Altura máxima para as miniaturas */
   width: auto;
   height: auto;
   border-radius: 5px;
@@ -114,6 +129,7 @@ body, html {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 5;
 }
 
 .left-button, .right-button {
@@ -122,6 +138,7 @@ body, html {
   padding: 15px;
   font-size: 30px;
   color: #555;
+  background: none;
 }
 
 .left-button:hover, .right-button:hover {
@@ -130,11 +147,11 @@ body, html {
 }
 
 .left-button {
-  left: 30px;
+  left: 10px;
 }
 
 .right-button {
-  right: 30px;
+  right: 10px;
 }
 
 </style>
@@ -149,7 +166,7 @@ body, html {
   </div>
 </div>
 
-<img id="current-image" class="current-image" alt="Visualizador de conteúdo" />
+<img id="current-image" src="caminho_para_sua_imagem.jpg" alt="Visualizador de conteúdo" />
 
 <div class="navigation-buttons left-button">
   <button onclick="loadPreviousImage()">&#10094;</button>
@@ -163,12 +180,6 @@ body, html {
 <script>
 var imageUrls = [];
 var currentImageIndex = 0;
-
-function adjustImageSize(img) {
-  const windowHeight = window.innerHeight;
-  const imageMaxHeight = Math.min(img.naturalHeight, windowHeight * 0.5);
-  img.style.maxHeight = `${imageMaxHeight}px`;
-}
 
 function loadNextImage() {
   currentImageIndex++;
@@ -189,17 +200,19 @@ function loadPreviousImage() {
 function showImage(index) {
   var currentImage = document.getElementById('current-image');
   currentImage.src = imageUrls[index];
-  adjustImageSize(currentImage);
-  currentImage.className = 'current-image large-image';
   currentImage.style.display = 'block';
 }
 
 function loadImages() {
   var urls = document.querySelectorAll('.url-input');
   imageUrls = [];
-  urls.forEach(function(urlInput) {
+  urls.forEach(function(urlInput, index) {
     if (urlInput.value.trim() !== '') {
       imageUrls.push(urlInput.value.trim());
+    }
+    // Remove additional URL input fields after the images are loaded
+    if (index !== 0) {
+      urlInput.parentElement.remove();
     }
   });
 
@@ -211,8 +224,11 @@ function loadImages() {
     img.src = url;
     img.alt = 'Imagem ' + (index + 1);
     img.className = 'thumbnail';
+    img.style.width = '100%'; // Ensure the thumbnails are responsive
+    img.style.height = 'auto'; // Maintain aspect ratio
     img.onclick = function() {
-      showImage(index);
+      currentImageIndex = index;
+      showImage(currentImageIndex);
     };
     var imageContainer = document.createElement('div');
     imageContainer.className = 'image-container';
@@ -221,18 +237,8 @@ function loadImages() {
   });
 
   if (imageUrls.length > 0) {
-    currentImageIndex = 0;
-    showImage(currentImageIndex);
+    showImage(0);
   }
-
-  // Clear additional URL input fields to improve viewing area
-  var inputContainers = document.querySelectorAll('.url-input-container');
-  inputContainers.forEach(function(container, index) {
-    // Keep only the first input container
-    if (index !== 0) {
-      container.remove();
-    }
-  });
 }
 
 function addUrlInput() {
@@ -258,10 +264,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('.load-button').addEventListener('click', loadImages);
 });
 
-window.onresize = function() {
-  adjustImageSize(document.getElementById('current-image'));
-};
-
 document.addEventListener('keydown', function(event) {
   if (event.key === 'ArrowRight') {
     loadNextImage();
@@ -269,8 +271,6 @@ document.addEventListener('keydown', function(event) {
     loadPreviousImage();
   }
 });
-
-// document.getElementById('current-image').addEventListener('click', enlargeImage);
 
 </script>
 
