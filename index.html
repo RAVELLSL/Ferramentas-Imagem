@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visualizador de Imagens</title>
+<style>
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #ecf0f1;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#url-input-container {
+  margin-top: 2rem;
+  width: 100%;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.url-input-container {
+  display: flex;
+  gap: 10px;
+}
+
+.url-input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+#add-button, .load-button {
+  background-image: linear-gradient(to right, #ffafbd, #2193b0, #6dd5ed);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 30px;
+  cursor: pointer;
+  font-size: 12px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+#add-button:hover, .load-button:hover, .remove-button:hover, .left-button:hover, .right-button:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+}
+
+.remove-button {
+  border-radius: 10%;
+  padding: 10px 13px;
+}
+
+.current-image {
+  max-width: 80%;
+  max-height: 50vh;
+  object-fit: contain;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  display: block;
+}
+
+#images-container {
+  width: 80%;
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.image-container {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.image-container img {
+  width: 100px;
+  height: 100px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.image-container img:hover {
+  transform: translateY(-5px);
+}
+
+.navigation-buttons {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.left-button, .right-button {
+  border: none;
+  cursor: pointer;
+  padding: 15px;
+  font-size: 30px; /* Tamanho do ícone da seta */
+  color: #555; /* Cor do ícone da seta */
+}
+
+.left-button:hover, .right-button:hover {
+  background-color: #fff; /* Mantém o fundo branco ao passar o mouse */
+  color: #333; /* Escurece um pouco a seta para indicar interatividade */
+}
+
+.left-button {
+  left: 30px;
+}
+
+.right-button {
+  right: 30px;
+}
+
+
+.left-button:hover, .right-button:hover {
+  background-color: transparent;
+  color: #333;
+}
+
+
+</style>
+</head>
+<body>
+
+<div id="url-input-container">
+  <div class="url-input-container">
+    <input type="text" class="url-input" placeholder="Insira o URL da imagem aqui...">
+    <button id="add-button">+</button>
+    <button class="load-button">Carregar Imagens</button>
+  </div>
+</div>
+
+<img id="current-image" class="current-image" alt="Visualizador de conteúdo" />
+
+<div class="navigation-buttons left-button">
+  <button onclick="loadPreviousImage()">&#10094;</button>
+</div>
+<div class="navigation-buttons right-button">
+  <button onclick="loadNextImage()">&#10095;</button>
+</div>
+
+<div id="images-container"></div>
+
+<script>
+var imageUrls = [];
+var currentImageIndex = 0;
+
+function adjustImageSize(img) {
+  const windowHeight = window.innerHeight;
+  const imageMaxHeight = Math.min(img.naturalHeight, windowHeight * 0.5);
+  img.style.maxHeight = `${imageMaxHeight}px`;
+}
+
+function loadNextImage() {
+  currentImageIndex++;
+  if (currentImageIndex >= imageUrls.length) {
+    currentImageIndex = 0;
+  }
+  showImage(currentImageIndex);
+}
+
+function loadPreviousImage() {
+  currentImageIndex--;
+  if (currentImageIndex < 0) {
+    currentImageIndex = imageUrls.length - 1;
+  }
+  showImage(currentImageIndex);
+}
+
+function showImage(index) {
+  var currentImage = document.getElementById('current-image');
+  currentImage.src = imageUrls[index];
+  adjustImageSize(currentImage);
+  currentImage.style.display = 'block';
+}
+
+function loadImages() {
+  var urls = document.querySelectorAll('.url-input');
+  imageUrls = [];
+  urls.forEach(function(urlInput) {
+    if (urlInput.value.trim() !== '') {
+      imageUrls.push(urlInput.value.trim());
+    }
+  });
+
+  var imagesContainer = document.getElementById('images-container');
+  imagesContainer.innerHTML = '';
+
+  imageUrls.forEach(function(url, index) {
+    var img = new Image();
+    img.src = url;
+    img.alt = 'Imagem ' + (index + 1);
+    img.className = 'thumbnail';
+    img.onclick = function() {
+      showImage(index);
+    };
+    var imageContainer = document.createElement('div');
+    imageContainer.className = 'image-container';
+    imageContainer.appendChild(img);
+    imagesContainer.appendChild(imageContainer);
+  });
+
+  if (imageUrls.length > 0) {
+    currentImageIndex = 0;
+    showImage(currentImageIndex);
+  }
+
+  // Remove todas as barras de entrada adicionais
+  document.querySelectorAll('.url-input-container:not(:first-child)').forEach(container => container.remove());
+}
+
+function addUrlInput() {
+  var urlInputContainer = document.getElementById('url-input-container');
+  var newContainer = document.createElement('div');
+  newContainer.className = 'url-input-container';
+  newContainer.innerHTML = `
+    <input type="text" class="url-input" placeholder="Insira o URL da imagem aqui...">
+    <button class="remove-button">-</button>
+  `;
+  urlInputContainer.appendChild(newContainer);
+
+  var removeButtons = newContainer.getElementsByClassName('remove-button');
+  for (var i = 0; i < removeButtons.length; i++) {
+    removeButtons[i].addEventListener('click', function() {
+      this.parentElement.remove();
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('add-button').addEventListener('click', addUrlInput);
+  document.querySelector('.load-button').addEventListener('click', loadImages);
+});
+
+window.onresize = adjustImageSize(document.getElementById('current-image'));
+
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'ArrowRight') {
+    loadNextImage();
+  } else if (event.key === 'ArrowLeft') {
+    loadPreviousImage();
+  }
+});
+
+</script>
+
+
+</body>
+</html>
