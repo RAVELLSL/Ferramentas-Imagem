@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -54,9 +55,8 @@ body, html {
   transition: all 0.3s ease;
 }
 
-#add-button:hover, .load-button:hover, .remove-button:hover, .left-button:hover, .right-button:hover {
+#add-button:hover, .load-button:hover, .remove-button:hover {
   opacity: 0.9;
-  transform: scale(1.05);
 }
 
 .remove-button {
@@ -64,9 +64,15 @@ body, html {
   padding: 10px 13px;
 }
 
+/* Styles for the large highlighted image */
 .current-image {
-  max-width: 80%;
-  max-height: 50vh;
+  display: none; /* Initially hidden until an image is loaded */
+  /* These styles will be overwritten when .large-image class is added dynamically */
+}
+
+.large-image {
+  max-width: 90%;
+  max-height: 60vh;
   object-fit: contain;
   margin: 20px auto;
   border-radius: 8px;
@@ -89,15 +95,18 @@ body, html {
   transition: transform 0.2s;
 }
 
-.image-container img {
-  width: 100px;
-  height: 100px;
+/* Styles for thumbnail images */
+.thumbnail {
+  max-width: 100px; /* Small size for guiding thumbnails */
+  max-height: 100px; /* Small size for guiding thumbnails */
+  width: auto;
+  height: auto;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
 }
 
-.image-container img:hover {
+.thumbnail:hover {
   transform: translateY(-5px);
 }
 
@@ -111,13 +120,13 @@ body, html {
   border: none;
   cursor: pointer;
   padding: 15px;
-  font-size: 30px; /* Tamanho do ícone da seta */
-  color: #555; /* Cor do ícone da seta */
+  font-size: 30px;
+  color: #555;
 }
 
 .left-button:hover, .right-button:hover {
-  background-color: #fff; /* Mantém o fundo branco ao passar o mouse */
-  color: #333; /* Escurece um pouco a seta para indicar interatividade */
+  background-color: #fff;
+  color: #333;
 }
 
 .left-button {
@@ -127,13 +136,6 @@ body, html {
 .right-button {
   right: 30px;
 }
-
-
-.left-button:hover, .right-button:hover {
-  background-color: transparent;
-  color: #333;
-}
-
 
 </style>
 </head>
@@ -188,6 +190,7 @@ function showImage(index) {
   var currentImage = document.getElementById('current-image');
   currentImage.src = imageUrls[index];
   adjustImageSize(currentImage);
+  currentImage.className = 'current-image large-image';
   currentImage.style.display = 'block';
 }
 
@@ -222,8 +225,14 @@ function loadImages() {
     showImage(currentImageIndex);
   }
 
-  // Remove todas as barras de entrada adicionais
-  document.querySelectorAll('.url-input-container:not(:first-child)').forEach(container => container.remove());
+  // Clear additional URL input fields to improve viewing area
+  var inputContainers = document.querySelectorAll('.url-input-container');
+  inputContainers.forEach(function(container, index) {
+    // Keep only the first input container
+    if (index !== 0) {
+      container.remove();
+    }
+  });
 }
 
 function addUrlInput() {
@@ -249,7 +258,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('.load-button').addEventListener('click', loadImages);
 });
 
-window.onresize = adjustImageSize(document.getElementById('current-image'));
+window.onresize = function() {
+  adjustImageSize(document.getElementById('current-image'));
+};
 
 document.addEventListener('keydown', function(event) {
   if (event.key === 'ArrowRight') {
@@ -258,6 +269,8 @@ document.addEventListener('keydown', function(event) {
     loadPreviousImage();
   }
 });
+
+// document.getElementById('current-image').addEventListener('click', enlargeImage);
 
 </script>
 
