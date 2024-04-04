@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <title>Visualizador de Imagens</title>
 <style>
 body, html {
@@ -12,23 +13,22 @@ body, html {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #ecf0f1;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: linear-gradient(135deg, #2c3e50, #34495e);
+  font-family: 'Orbitron', sans-serif;
 }
 
 #url-input-container {
-  z-index: 20; /* Eleva acima das miniaturas para evitar sobreposição */
-  position: relative; /* Necessário para o z-index funcionar */
+  z-index: 20;
+  position: relative;
   margin-top: 2rem;
   width: 80%;
-  max-width: 500px; /* Limita o tamanho do contêiner de entrada para evitar ocupar toda a largura em telas grandes */
+  max-width: 600px;
   background-color: #fff;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid #333;
+  backdrop-filter: blur(5px);
 }
 
 .url-input-container {
@@ -42,50 +42,47 @@ body, html {
   border: 1px solid #ced4da;
   border-radius: 5px;
   font-size: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #333;
 }
 
-#add-button, .load-button {
-  background-color: #007bff; /* Botões azuis */
+#add-button, .load-button, .remove-button {
+  background: #16a085;
   color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 15px;
+  border: 1px solid #aaa;
+  border-radius: 20px;
+  padding: 12px 20px;
   cursor: pointer;
   font-size: 16px;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-#add-button:hover, .load-button:hover {
-  opacity: 0.8;
+#add-button:hover, .load-button:hover, .remove-button:hover {
+  background: #1abc9c;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
 }
 
-.remove-button {
-  background-color: #dc3545; /* Botões vermelhos para remover */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-size: 16px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.remove-button:hover {
-  opacity: 0.8;
+/* Ajustes para o contêiner da imagem principal para evitar sobreposição com as miniaturas */
+#image-container {
+  width: 80%; /* Ajuste conforme a largura desejada */
+  max-width: 1024px; /* Largura máxima do contêiner da imagem */
+  margin-top: 2rem;
+  margin-bottom: 150px; /* Espaço para as miniaturas */
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
 
 #current-image {
-  width: 40vw; /* 80% da largura da viewport */
-  height: auto; /* Ajuste automático da altura para manter a proporção */
-  object-fit: contain; /* A imagem se ajustará dentro dessas dimensões sem cortar */
-  position: absolute;
-  left: 50%; /* Centraliza horizontalmente */
-  bottom: 20vh; /* Espaço do rodapé para miniaturas e margem */
-  transform: translateX(-50%); /* Centraliza horizontalmente */
-  z-index: 1;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 #images-container {
@@ -94,7 +91,7 @@ body, html {
   left: 0;
   right: 0;
   padding: 10px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.5);
   border-top: 1px solid #ced4da;
   display: flex;
   flex-wrap: wrap;
@@ -102,48 +99,50 @@ body, html {
   align-items: center;
   gap: 10px;
   z-index: 10;
-  overflow-x: auto; /* Permite rolagem horizontal se as miniaturas ultrapassarem a largura da tela */
-  max-height: 150px; /* Altura das miniaturas */
+  overflow-x: auto;
+  height: 100px; /* Define a altura para as miniaturas */
 }
 
 .image-container {
-  display: inline-block;
   transition: transform 0.2s;
 }
 
 .thumbnail {
-  max-width: 100px; /* Largura máxima para as miniaturas */
-  max-height: 100px; /* Altura máxima para as miniaturas */
+  max-width: 100px;
+  max-height: 100px;
   width: auto;
   height: auto;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   cursor: pointer;
+  border: 2px solid #16a085;
 }
 
 .thumbnail:hover {
   transform: translateY(-5px);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
 }
 
 .navigation-buttons {
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 5;
+  z-index: 20;
+  transition: all 0.3s ease;
 }
 
 .left-button, .right-button {
   border: none;
   cursor: pointer;
   padding: 15px;
-  font-size: 30px;
-  color: #555;
+  font-size: 40px;
+  color: #16a085;
   background: none;
 }
 
 .left-button:hover, .right-button:hover {
-  background-color: #fff;
-  color: #333;
+  color: #1abc9c;
+  transform: scale(1.1);
 }
 
 .left-button {
@@ -166,7 +165,9 @@ body, html {
   </div>
 </div>
 
-<img id="current-image" src="caminho_para_sua_imagem.jpg" alt="Visualizador de conteúdo" />
+<div id="image-container">
+  <img id="current-image" src="caminho_para_sua_imagem.jpg" alt="Visualizador de conteúdo" />
+</div>
 
 <div class="navigation-buttons left-button">
   <button onclick="loadPreviousImage()">&#10094;</button>
