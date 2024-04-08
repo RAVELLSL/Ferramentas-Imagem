@@ -6,6 +6,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <title>Visualizador de Imagens</title>
 <style>
+/* Estilos CSS */
 body, html {
   height: 100%;
   margin: 0;
@@ -159,8 +160,7 @@ body, html {
 
 <div id="url-input-container">
   <div class="url-input-container">
-    <input type="text" class="url-input" placeholder="Insira o URL da imagem aqui...">
-    <button id="add-button">+</button>
+    <textarea id="url-input" class="url-input" placeholder="Insira os URLs das imagens aqui..." rows="4"></textarea>
     <button class="load-button">Carregar Imagens</button>
   </div>
 </div>
@@ -205,17 +205,15 @@ function showImage(index) {
 }
 
 function loadImages() {
-  var urls = document.querySelectorAll('.url-input');
-  imageUrls = [];
-  urls.forEach(function(urlInput, index) {
-    if (urlInput.value.trim() !== '') {
-      imageUrls.push(urlInput.value.trim());
-    }
-    // Remove additional URL input fields after the images are loaded
-    if (index !== 0) {
-      urlInput.parentElement.remove();
-    }
-  });
+  var urlsInput = document.getElementById('url-input').value;
+  var urls = urlsInput.split('\n').filter(url => url.trim() !== '');
+
+  if (urls.length === 0) {
+    alert('Por favor, insira os URLs das imagens.');
+    return;
+  }
+
+  imageUrls = urls;
 
   var imagesContainer = document.getElementById('images-container');
   imagesContainer.innerHTML = '';
@@ -225,8 +223,8 @@ function loadImages() {
     img.src = url;
     img.alt = 'Imagem ' + (index + 1);
     img.className = 'thumbnail';
-    img.style.width = '100%'; // Ensure the thumbnails are responsive
-    img.style.height = 'auto'; // Maintain aspect ratio
+    img.style.width = '100px'; // Manter o estilo das miniaturas
+    img.style.height = 'auto'; // Manter o estilo das miniaturas
     img.onclick = function() {
       currentImageIndex = index;
       showImage(currentImageIndex);
@@ -242,26 +240,7 @@ function loadImages() {
   }
 }
 
-function addUrlInput() {
-  var urlInputContainer = document.getElementById('url-input-container');
-  var newContainer = document.createElement('div');
-  newContainer.className = 'url-input-container';
-  newContainer.innerHTML = `
-    <input type="text" class="url-input" placeholder="Insira o URL da imagem aqui...">
-    <button class="remove-button">-</button>
-  `;
-  urlInputContainer.appendChild(newContainer);
-
-  var removeButtons = newContainer.getElementsByClassName('remove-button');
-  for (var i = 0; i < removeButtons.length; i++) {
-    removeButtons[i].addEventListener('click', function() {
-      this.parentElement.remove();
-    });
-  }
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('add-button').addEventListener('click', addUrlInput);
   document.querySelector('.load-button').addEventListener('click', loadImages);
 });
 
