@@ -1,259 +1,130 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-<title>Visualizador de Imagens</title>
-<style>
-/* Estilos CSS */
-body, html {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: linear-gradient(135deg, #2c3e50, #34495e);
-  font-family: 'Orbitron', sans-serif;
-}
-
-#url-input-container {
-  z-index: 20;
-  position: relative;
-  margin-top: 2rem;
-  width: 80%;
-  max-width: 600px;
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  border: 1px solid #333;
-  backdrop-filter: blur(5px);
-}
-
-.url-input-container {
-  display: flex;
-  gap: 10px;
-}
-
-.url-input {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ced4da;
-  border-radius: 5px;
-  font-size: 16px;
-  background: rgba(255, 255, 255, 0.8);
-  color: #333;
-}
-
-#add-button, .load-button, .remove-button {
-  background: #16a085;
-  color: white;
-  border: 1px solid #aaa;
-  border-radius: 20px;
-  padding: 12px 20px;
-  cursor: pointer;
-  font-size: 16px;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  font-weight: bold;
-  text-transform: uppercase;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-#add-button:hover, .load-button:hover, .remove-button:hover {
-  background: #1abc9c;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
-
-/* Ajustes para o contêiner da imagem principal para evitar sobreposição com as miniaturas */
-#image-container {
-  width: 80%; /* Ajuste conforme a largura desejada */
-  max-width: 1024px; /* Largura máxima do contêiner da imagem */
-  margin-top: 2rem;
-  margin-bottom: 150px; /* Espaço para as miniaturas */
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-#current-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-#images-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 10px;
-  background: rgba(255, 255, 255, 0.5);
-  border-top: 1px solid #ced4da;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  z-index: 10;
-  overflow-x: auto;
-  height: 100px; /* Define a altura para as miniaturas */
-}
-
-.image-container {
-  transition: transform 0.2s;
-}
-
-.thumbnail {
-  max-width: 100px;
-  max-height: 100px;
-  width: auto;
-  height: auto;
-  border-radius: 5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  border: 2px solid #16a085;
-}
-
-.thumbnail:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
-}
-
-.navigation-buttons {
-  position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 20;
-  transition: all 0.3s ease;
-}
-
-.left-button, .right-button {
-  border: none;
-  cursor: pointer;
-  padding: 15px;
-  font-size: 40px;
-  color: #16a085;
-  background: none;
-}
-
-.left-button:hover, .right-button:hover {
-  color: #1abc9c;
-  transform: scale(1.1);
-}
-
-.left-button {
-  left: 10px;
-}
-
-.right-button {
-  right: 10px;
-}
-
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Imagens Otimizado com Carregamento Paralelo</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            padding: 10px;
+            background: #f8f8f8;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        textarea {
+            height: 50px;
+            resize: none;
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        #imageDisplay {
+            flex-grow: 1;
+            display: flex;
+            align-items: flex-start; /* Assegura que a imagem encoste no topo */
+            justify-content: center;
+            background-color: black; /* Tarjas pretas para espaços não utilizados */
+            overflow: hidden;
+            position: relative;
+        }
+        img {
+            height: 100%; /* Assegura que a altura seja máxima */
+            width: auto; /* Mantém a proporção da imagem */
+            max-width: none; /* Remove restrição de largura máxima */
+            display: none; /* Inicia imagens como ocultas */
+        }
+        button {
+            padding: 5px 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <textarea id="imageUrls" placeholder="Cole cada link em uma nova linha"></textarea>
+        <button onclick="selectText()">Selecionar Tudo</button>
+        <button onclick="loadImages()">Carregar</button>
+    </header>
+    <div id="imageDisplay"></div>
 
-<div id="url-input-container">
-  <div class="url-input-container">
-    <textarea id="url-input" class="url-input" placeholder="Insira os URLs das imagens aqui..." rows="4"></textarea>
-    <button class="load-button">Carregar Imagens</button>
-  </div>
-</div>
+    <script>
+        let images = [];
+        let currentIndex = 0;
 
-<div id="image-container">
-  <img id="current-image" src="caminho_para_sua_imagem.jpg" alt="Visualizador de conteúdo" />
-</div>
+        function loadImages() {
+            const imageUrls = document.getElementById('imageUrls').value;
+            let urls = imageUrls.split('\n').map(url => url.trim()).filter(url => url);
+            currentIndex = 0;
 
-<div class="navigation-buttons left-button">
-  <button onclick="loadPreviousImage()">&#10094;</button>
-</div>
-<div class="navigation-buttons right-button">
-  <button onclick="loadNextImage()">&#10095;</button>
-</div>
+            const imageDisplay = document.getElementById('imageDisplay');
+            imageDisplay.innerHTML = ''; // Limpa a área de visualização
 
-<div id="images-container"></div>
+            const loadPromises = urls.map(url => {
+                const img = new Image();
+                const imgPromise = new Promise((resolve, reject) => {
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = url;
+                });
+                return imgPromise;
+            });
 
-<script>
-var imageUrls = [];
-var currentImageIndex = 0;
+            Promise.all(loadPromises).then(loadedImages => {
+                images = loadedImages;
+                images.forEach((img, idx) => {
+                    img.style.display = idx === currentIndex ? 'block' : 'none';
+                    imageDisplay.appendChild(img);
+                });
+                updateImageDisplay();
+            }).catch(error => {
+                console.error("Error loading images: ", error);
+            });
+        }
 
-function loadNextImage() {
-  currentImageIndex++;
-  if (currentImageIndex >= imageUrls.length) {
-    currentImageIndex = 0;
-  }
-  showImage(currentImageIndex);
-}
+        function updateImageDisplay() {
+            images.forEach((img, idx) => {
+                img.style.display = idx === currentIndex ? 'block' : 'none';
+            });
+        }
 
-function loadPreviousImage() {
-  currentImageIndex--;
-  if (currentImageIndex < 0) {
-    currentImageIndex = imageUrls.length - 1;
-  }
-  showImage(currentImageIndex);
-}
+        function selectText() {
+            const textarea = document.getElementById('imageUrls');
+            textarea.focus();
+            textarea.select();
+        }
 
-function showImage(index) {
-  var currentImage = document.getElementById('current-image');
-  currentImage.src = imageUrls[index];
-  currentImage.style.display = 'block';
-}
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'ArrowRight') {
+                nextImage();
+            } else if (event.key === 'ArrowLeft') {
+                previousImage();
+            }
+        });
 
-function loadImages() {
-  var urlsInput = document.getElementById('url-input').value;
-  var urls = urlsInput.split('\n').filter(url => url.trim() !== '');
+        function nextImage() {
+            if (currentIndex < images.length - 1) {
+                images[currentIndex].style.display = 'none';
+                currentIndex++;
+                images[currentIndex].style.display = 'block';
+            }
+        }
 
-  if (urls.length === 0) {
-    alert('Por favor, insira os URLs das imagens.');
-    return;
-  }
-
-  imageUrls = urls;
-
-  var imagesContainer = document.getElementById('images-container');
-  imagesContainer.innerHTML = '';
-
-  imageUrls.forEach(function(url, index) {
-    var img = new Image();
-    img.src = url;
-    img.alt = 'Imagem ' + (index + 1);
-    img.className = 'thumbnail';
-    img.style.width = '100px'; // Manter o estilo das miniaturas
-    img.style.height = 'auto'; // Manter o estilo das miniaturas
-    img.onclick = function() {
-      currentImageIndex = index;
-      showImage(currentImageIndex);
-    };
-    var imageContainer = document.createElement('div');
-    imageContainer.className = 'image-container';
-    imageContainer.appendChild(img);
-    imagesContainer.appendChild(imageContainer);
-  });
-
-  if (imageUrls.length > 0) {
-    showImage(0);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelector('.load-button').addEventListener('click', loadImages);
-});
-
-document.addEventListener('keydown', function(event) {
-  if (event.key === 'ArrowRight') {
-    loadNextImage();
-  } else if (event.key === 'ArrowLeft') {
-    loadPreviousImage();
-  }
-});
-
-</script>
-
-
+        function previousImage() {
+            if (currentIndex > 0) {
+                images[currentIndex].style.display = 'none';
+                currentIndex--;
+                images[currentIndex].style.display = 'block';
+            }
+        }
+    </script>
 </body>
 </html>
