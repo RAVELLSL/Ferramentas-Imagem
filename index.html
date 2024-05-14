@@ -38,13 +38,19 @@
         img {
             height: 100%; /* Assegura que a altura seja máxima */
             width: auto; /* Mantém a proporção da imagem */
-            max-width: none; /* Remove restrição de largura máxima */
+            max-width: 100%; /* Limita a largura da imagem para caber no contêiner */
             display: none; /* Inicia imagens como ocultas */
+            image-rendering: optimizeQuality; /* Propriedade para melhorar a qualidade da imagem */
         }
         button {
             padding: 5px 10px;
             font-size: 14px;
             cursor: pointer;
+        }
+        .error-message {
+            color: red;
+            text-align: center;
+            padding: 10px;
         }
     </style>
 </head>
@@ -55,6 +61,7 @@
         <button onclick="loadImages()">Carregar</button>
     </header>
     <div id="imageDisplay"></div>
+    <div id="errorContainer"></div>
 
     <script>
         let images = [];
@@ -67,12 +74,17 @@
 
             const imageDisplay = document.getElementById('imageDisplay');
             imageDisplay.innerHTML = ''; // Limpa a área de visualização
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = ''; // Limpa mensagens de erro
 
             const loadPromises = urls.map(url => {
                 const img = new Image();
                 const imgPromise = new Promise((resolve, reject) => {
                     img.onload = () => resolve(img);
-                    img.onerror = reject;
+                    img.onerror = () => {
+                        errorContainer.innerHTML += `<div class="error-message">Erro ao carregar a imagem: ${url}</div>`;
+                        reject(new Error(`Erro ao carregar a imagem: ${url}`));
+                    };
                     img.src = url;
                 });
                 return imgPromise;
@@ -125,6 +137,10 @@
                 images[currentIndex].style.display = 'block';
             }
         }
+
+        window.addEventListener('resize', function() {
+            updateImageDisplay();
+        });
     </script>
 </body>
 </html>
