@@ -9,8 +9,7 @@
             height: 100%;
             margin: 0;
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
+            overflow: hidden; /* Evita rolagem quando a barra superior é ocultada */
         }
         header {
             padding: 10px;
@@ -19,6 +18,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000; /* Certifica que a barra ficará por cima */
         }
         textarea {
             height: 50px;
@@ -29,18 +30,19 @@
         #imageDisplay {
             flex-grow: 1;
             display: flex;
-            align-items: flex-start; /* Assegura que a imagem encoste no topo */
+            align-items: center; /* Centraliza a imagem verticalmente */
             justify-content: center;
             background-color: black; /* Tarjas pretas para espaços não utilizados */
             overflow: hidden;
             position: relative;
+            transition: height 0.3s ease-in-out;
         }
         img {
-            height: 100%; /* Assegura que a altura seja máxima */
-            width: auto; /* Mantém a proporção da imagem */
-            max-width: 100%; /* Limita a largura da imagem para caber no contêiner */
+            height: 100%;
+            width: auto;
+            max-width: 100%;
             display: none; /* Inicia imagens como ocultas */
-            image-rendering: optimizeQuality; /* Propriedade para melhorar a qualidade da imagem */
+            object-fit: cover; /* Ajusta a imagem para cobrir toda a área do contêiner */
         }
         button {
             padding: 5px 10px;
@@ -52,16 +54,43 @@
             text-align: center;
             padding: 10px;
         }
+        #toggleButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            color: white;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #toggleButton::after {
+            content: '▼';
+            color: white;
+        }
+        .hidden {
+            display: none;
+        }
+        .full-screen {
+            height: 100vh; /* Ocupa toda a altura da viewport */
+        }
     </style>
 </head>
 <body>
-    <header>
+    <header id="header">
         <textarea id="imageUrls" placeholder="Cole cada link em uma nova linha"></textarea>
         <button onclick="selectText()">Selecionar Tudo</button>
         <button onclick="loadImages()">Carregar</button>
     </header>
-    <div id="imageDisplay"></div>
+    <div id="imageDisplay" class="full-screen"></div>
     <div id="errorContainer"></div>
+    <button id="toggleButton" class="hidden" onclick="toggleHeader()"></button>
 
     <script>
         let images = [];
@@ -86,6 +115,10 @@
                         reject(new Error(`Erro ao carregar a imagem: ${url}`));
                     };
                     img.src = url;
+                    img.style.height = '100%';
+                    img.style.width = 'auto';
+                    img.style.maxWidth = '100%';
+                    img.style.objectFit = 'cover';
                 });
                 return imgPromise;
             });
@@ -100,6 +133,11 @@
             }).catch(error => {
                 console.error("Error loading images: ", error);
             });
+
+            // Recolhe a barra superior e expande a imagem para a tela inteira
+            document.getElementById('header').classList.add('hidden');
+            document.getElementById('imageDisplay').classList.add('full-screen');
+            document.getElementById('toggleButton').classList.remove('hidden');
         }
 
         function updateImageDisplay() {
@@ -112,6 +150,14 @@
             const textarea = document.getElementById('imageUrls');
             textarea.focus();
             textarea.select();
+        }
+
+        function toggleHeader() {
+            const header = document.getElementById('header');
+            const imageDisplay = document.getElementById('imageDisplay');
+            header.classList.toggle('hidden');
+            imageDisplay.classList.toggle('full-screen');
+            document.getElementById('toggleButton').classList.toggle('hidden');
         }
 
         document.addEventListener('keydown', function(event) {
